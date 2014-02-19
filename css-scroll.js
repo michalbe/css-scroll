@@ -601,16 +601,32 @@
 	},
 	"css-scroll": {
 		"lib": {
+			"getCss.js": function (exports, module, require) {
+				
+				module.exports = function() {
+				  // XXX: need to support 3 cases here (maybe more?)
+				  // - styles in the head (done)
+				  // - external css files
+				  // - @import from css files
+				  
+				  var styles = [];
+
+				  // in head 
+				  var headStyles = document.getElementsByTagName('style');
+				  for (var i=0, l=headStyles.length; i<l; i++) {
+				    styles.push(headStyles[i].textContent);
+				  }
+				  
+				  return styles;
+				};
+			},
 			"main.js": function (exports, module, require) {
 				var parse = require('css-parse');
+				var styles = require('./getCss');
 
-				// CSS input string
-				var css = "body { \n background-color: #fff;\n }";
+				var css = styles()[0];
 
 				var output_obj = parse(css);
-
-				// Filename parameter for source mapping
-				var output_obj_pos = parse(css, { filename: 'file.css' });
 
 				// Print parsed object as CSS string
 				console.log(JSON.stringify(output_obj, null, 2));
