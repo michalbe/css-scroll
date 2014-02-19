@@ -6,7 +6,9 @@
         width: 150px;
         height: 150px;
         background-color: #FF00FF;
-        animation: testAnimation 3s;
+        animation-name: testAnimation;
+        animation-controller: scroll;
+        animation-scope: 0%, 100%;
         position: fixed;
         left: calc(50% - 75px);
         top: calc(50% - 75px);
@@ -16,6 +18,8 @@
           100% { transform: rotate(270deg); }
       }
     </style>
+    
+    <script src="../css-scroll.js" defer></script>
   </head>
 <body>
   <div></div>

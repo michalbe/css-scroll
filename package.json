@@ -1,0 +1,11 @@
+{
+  "name": "css-scroll",
+  "version": "0.1.0",
+  "dependencies": {
+    "css-parse": "~1.7.0"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-webmake": "~0.1.2"
+  }
+}
