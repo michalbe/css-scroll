@@ -1,9 +1,23 @@
 <!DOCTYPE html> 
 <html>
   <head>
+    <style>
+      div {
+        width: 150px;
+        height: 150px;
+        background-color: #FF00FF;
+        animation: testAnimation 3s;
+        position: fixed;
+        left: calc(50% - 75px);
+        top: calc(50% - 75px);
+      }
+      @keyframes testAnimation {
+          0% { transform: rotate(0); }
+          100% { transform: rotate(270deg); }
+      }
+    </style>
   </head>
 <body>
-  
+  <div></div>
 </body>
 </html>
-
