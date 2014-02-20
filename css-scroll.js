@@ -622,21 +622,6 @@
 				};
 			},
 			"keyframe-manager.js": function (exports, module, require) {
-				var pr2px = require('./percent-to-pixels');
-
-				var extractValue = function(values) {
-				  var value = values[0];
-				  
-				  if (value.indexOf('%') > -1) { // percentage
-				    value = pr2px(parseInt(value, 10));
-				  } else if (value.indexOf('px') > -1) { // pixels
-				    value = parseInt(value, 10);
-				  }
-				  // TODO: em support?
-				  
-				  return value;
-				}
-
 				var extractDeclarations = function(declarations) {
 				  var dec = '';
 				  declarations.forEach(function(declaration){
@@ -651,7 +636,7 @@
 				  var animation = {};
 				  
 				  keyframes.forEach(function(keyframe){
-				    animation[extractValue(keyframe.values)] = extractDeclarations(keyframe.declarations)
+				    animation[keyframe.values[0]] = extractDeclarations(keyframe.declarations)
 				  });
 				  
 				  return animation;
@@ -661,18 +646,25 @@
 				var parse = require('css-parse');
 				var styles = require('./getCss');
 				var keyframeManager = require('./keyframe-manager');
+				var ruleManager = require('./rule-manager');
+				var sc2px = require('./scope-to-pixels');
 
 				var css = styles()[0];
 
 				var stylesheet = parse(css).stylesheet;
-				var rules = stylesheet.rules;
+				var stylesheetRules = stylesheet.rules;
 
 				var animations = {};
+				var rules = {};
 
-				rules.forEach(function(rule) {
+				stylesheetRules.forEach(function(rule) {
 				  switch (rule.type) {
 				    case 'rule':
-				      //ruleJSON = ruleManager(rule);
+				      var ruleDetails = ruleManager(rule);
+				      // XXX: add multiple selectors support
+				      if (ruleDetails) {
+				        rules[rule.selectors[0]] = ruleDetails;
+				      }
 				      break;
 				    case 'keyframes' :
 				      animations[rule.name] = keyframeManager(rule.keyframes);
@@ -684,11 +676,75 @@
 				});
 
 				console.log(animations);
+				console.log(rules);
+
+				// attaching keyframes to elements
+				var selectors = Object.keys(rules);
+				selectors.forEach(function(selector) {
+				  var elements = document.querySelectorAll(selector);
+				  for (var i = 0, l = elements.length; i<l; i++) {
+				    var details = rules[selector];
+				    var anim = animations[details.name];
+				    var keyframes = Object.keys(anim);
+				    var scopeStart = details.scopeStart;
+				    var scopeEnd = details.scopeEnd;
+				    
+				    keyframes.forEach(function(frame){
+				      console.log(sc2px(frame, scopeStart, scopeEnd));
+				      elements[i].dataset[sc2px(frame, scopeStart, scopeEnd)] = anim[frame];
+				    });
+				  }
+				});
 			},
-			"percent-to-pixels.js": function (exports, module, require) {
-				module.exports = function(percent) {
+			"rule-manager.js": function (exports, module, require) {
+				module.exports = function(rule) {
+
+				  var stringifiedRule = JSON.stringify(rule);
+				  
+				  var details = {
+				    scopeStart : '0%',
+				    scopeEnd : '100%'
+				  }
+
+				  if (
+				    stringifiedRule.indexOf('animation-name') > -1 &&
+				    stringifiedRule.indexOf('animation-controller') > -1
+				  ) {
+				    rule.declarations.forEach(function(declaration) {
+				      switch (declaration.property) {
+				        case 'animation-name':
+				          details.name = declaration.value;
+				          break;
+				        case 'animation-scope' :
+				          var scope = declaration.value.split(',');
+				          details.scopeStart = scope[0].trim();
+				          details.scopeEnd = scope[1].trim();
+				          break;
+				      }
+				    });
+				    
+				    return details;
+				  }
+				  
+				  return false;
+				}
+			},
+			"scope-to-pixels.js": function (exports, module, require) {
+				module.exports = function(value, scopeStart, scopeEnd) {
 				  var maxHeight = window.scrollMaxY;
-				  return maxHeight * (percent/100);
+
+				  value = parseInt(value, 10);
+
+				  if (scopeStart.indexOf('%') > -1) { // percentage
+				    scopeStart = maxHeight * (parseInt(scopeStart, 10)/100);
+				  }
+				  if (scopeEnd.indexOf('%') > -1) { // percentage
+				    scopeEnd = maxHeight * (parseInt(scopeEnd, 10)/100);
+				  }
+				  
+				  var fullScope = scopeEnd - scopeStart;
+
+				  return (fullScope * (value/100)) + scopeStart;
 				};
 			}
 		}
