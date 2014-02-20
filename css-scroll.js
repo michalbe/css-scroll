@@ -2287,7 +2287,7 @@
 			}
 		},
 		"lib": {
-			"getCss.js": function (exports, module, require) {
+			"get-css.js": function (exports, module, require) {
 				
 				module.exports = function() {
 
@@ -2330,7 +2330,7 @@
 			},
 			"main.js": function (exports, module, require) {
 				var parse = require('css-parse');
-				var styles = require('./getCss');
+				var styles = require('./get-css');
 				var keyframeManager = require('./keyframe-manager');
 				var ruleManager = require('./rule-manager');
 				var sc2px = require('./scope-to-pixels');
@@ -2423,10 +2423,17 @@
 
 				  if (scopeStart.indexOf('%') > -1) { // percentage
 				    scopeStart = maxHeight * (parseInt(scopeStart, 10)/100);
+				  } else {
+				    scopeStart = parseInt(scopeStart, 10);
 				  }
+
 				  if (scopeEnd.indexOf('%') > -1) { // percentage
 				    scopeEnd = maxHeight * (parseInt(scopeEnd, 10)/100);
+				  } else {
+				    scopeEnd = parseInt(scopeEnd, 10);
 				  }
+				  
+				  
 				  
 				  var fullScope = scopeEnd - scopeStart;
 
