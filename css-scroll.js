@@ -604,6 +604,7 @@
 			"getCss.js": function (exports, module, require) {
 				
 				module.exports = function() {
+
 				  // XXX: need to support 3 cases here (maybe more?)
 				  // - styles in the head (done)
 				  // - external css files
@@ -620,16 +621,75 @@
 				  return styles;
 				};
 			},
+			"keyframe-manager.js": function (exports, module, require) {
+				var pr2px = require('./percent-to-pixels');
+
+				var extractValue = function(values) {
+				  var value = values[0];
+				  
+				  if (value.indexOf('%') > -1) { // percentage
+				    value = pr2px(parseInt(value, 10));
+				  } else if (value.indexOf('px') > -1) { // pixels
+				    value = parseInt(value, 10);
+				  }
+				  // TODO: em support?
+				  
+				  return value;
+				}
+
+				var extractDeclarations = function(declarations) {
+				  var dec = '';
+				  declarations.forEach(function(declaration){
+				    dec += declaration.property + ':' + declaration.value + ';';
+				  });
+				  
+				  return dec;
+				}
+
+				module.exports = function(keyframes) {
+				  
+				  var animation = {};
+				  
+				  keyframes.forEach(function(keyframe){
+				    animation[extractValue(keyframe.values)] = extractDeclarations(keyframe.declarations)
+				  });
+				  
+				  return animation;
+				}
+			},
 			"main.js": function (exports, module, require) {
 				var parse = require('css-parse');
 				var styles = require('./getCss');
+				var keyframeManager = require('./keyframe-manager');
 
 				var css = styles()[0];
 
-				var output_obj = parse(css);
+				var stylesheet = parse(css).stylesheet;
+				var rules = stylesheet.rules;
 
-				// Print parsed object as CSS string
-				console.log(JSON.stringify(output_obj, null, 2));
+				var animations = {};
+
+				rules.forEach(function(rule) {
+				  switch (rule.type) {
+				    case 'rule':
+				      //ruleJSON = ruleManager(rule);
+				      break;
+				    case 'keyframes' :
+				      animations[rule.name] = keyframeManager(rule.keyframes);
+				      break;
+				    default:
+				      console.log(' Rule type not supported ');
+				      break;
+				  }
+				});
+
+				console.log(animations);
+			},
+			"percent-to-pixels.js": function (exports, module, require) {
+				module.exports = function(percent) {
+				  var maxHeight = window.scrollMaxY;
+				  return maxHeight * (percent/100);
+				};
 			}
 		}
 	}
