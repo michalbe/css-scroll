@@ -2417,7 +2417,7 @@
 			},
 			"scope-to-pixels.js": function (exports, module, require) {
 				module.exports = function(value, scopeStart, scopeEnd) {
-				  var maxHeight = window.scrollMaxY;
+				  var maxHeight = document.documentElement.scrollHeight;
 
 				  value = parseInt(value, 10);
 
@@ -2437,7 +2437,9 @@
 				  
 				  var fullScope = scopeEnd - scopeStart;
 
-				  return (fullScope * (value/100)) + scopeStart;
+				  var a = (fullScope * (value/100)) + scopeStart;
+				  console.log(value, a, maxHeight);
+				  return a;
 				};
 			}
 		}
