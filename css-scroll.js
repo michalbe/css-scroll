@@ -2432,14 +2432,10 @@
 				  } else {
 				    scopeEnd = parseInt(scopeEnd, 10);
 				  }
-				  
-				  
-				  
-				  var fullScope = scopeEnd - scopeStart;
 
-				  var a = (fullScope * (value/100)) + scopeStart;
-				  console.log(value, a, maxHeight);
-				  return a;
+				  var fullScope = scopeEnd - scopeStart;
+				  
+				  return (fullScope * (value/100)) + scopeStart;
 				};
 			}
 		}
